@@ -2,14 +2,14 @@ q = load "Dataset_Pay_Attendance";
 q_A = filter q by 'Members_Average_Price_c_AVG' != 0 && !('Account.Identity__c' in ["Employee", "Employee Family"]);
 q_B = filter q by 'Members_Average_Price_c_AVG' == 0 || 'Account.Identity__c' in ["Employee", "Employee Family"];
 
-result = group  q_A by ('Schedul.Studio_Name__c', 'Schedule_Class_Start_Time_Year_Month') full, 
-                q_B by ('Schedul.Studio_Name__c', 'Schedule_Class_Start_Time_Year_Month');
+result = group  q_A by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month') full, 
+                q_B by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month');
 
 result = foreach result generate 
 	coalesce(q_A.'Schedul.Studio_Name__c', q_B.'Schedul.Studio_Name__c') as 'Schedul.Studio_Name__c', 
-	coalesce(q_A.'Schedule_Class_Start_Time_Year_Month', q_B.'Schedule_Class_Start_Time_Year_Month') as 'Schedule_Class_Start_Time_Year_Month', 
-	sum(q_A.'Id_COUNT') as 'Paid Attendance', 
-	sum(q_B.'Id_COUNT') as 'Free Attendance';
+	coalesce(q_A.'Schedul_Schedule_Class_Start_Time_Year_Month', q_B.'Schedul_Schedule_Class_Start_Time_Year_Month') as 'Schedul_Schedule_Class_Start_Time_Year_Month', 
+	sum(q_A.'Id_UNIQUE') as 'Paid Attendance', 
+	sum(q_B.'Id_UNIQUE') as 'Free Attendance';
 
-result = order result by ('Schedul.Studio_Name__c' asc, 'Schedule_Class_Start_Time_Year_Month' asc);
+result = order result by ('Schedul.Studio_Name__c' asc, 'Schedul_Schedule_Class_Start_Time_Year_Month' asc);
 result = limit result 20000;
