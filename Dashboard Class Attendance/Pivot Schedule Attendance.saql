@@ -1,0 +1,68 @@
+
+q = load "Dataset_Class_Attendance";
+
+
+-- query attendance count goup by studio, modality, classroom, year-month
+q_count = group q by ('Schedul.Studio_Name__c', 'Modalit.Name', 'Classro.Name', 'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month', 'Id');
+
+
+r_count = foreach q_count generate 
+                'Schedul.Studio_Name__c' as 'Schedul.Studio_Name__c', 
+                'Modalit.Name' as 'Modalit.Name', 
+                'Classro.Name' as 'Classro.Name', 
+                'Schedul.Class_Start_Time__c_Year' as 'Schedul.Class_Start_Time__c_Year',
+                'Schedul.Class_Start_Time__c_Month' as 'Schedul.Class_Start_Time__c_Month', 
+                'Id' as 'Id';
+
+r_count = group r_count by ('Schedul.Studio_Name__c', 'Modalit.Name', 'Classro.Name', 'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month');
+
+r_count = foreach r_count generate 
+                'Schedul.Studio_Name__c' as 'Studio Name', 
+                'Modalit.Name' as 'Modality Name', 
+                'Classro.Name' as 'Classroom Name', 
+                'Schedul.Class_Start_Time__c_Year' + "~~~" + 'Schedul.Class_Start_Time__c_Month' as 'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month', 
+                count() as 'Attendance Count';
+
+
+-- query subtotal of attendance count goup by studio, year-month
+q_subTotalOfStudio = group r_count by ('Studio Name', 
+    'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month');
+r_subTotalOfStudio = foreach q_subTotalOfStudio generate 
+    'Studio Name', 
+    'Studio Name'+" Sub Total" as 'Modality Name', 
+    'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month',
+    sum('Attendance Count') as 'Attendance Count';
+
+r_classPerDayOfStudio = foreach r_subTotalOfStudio generate 
+    'Studio Name', 
+    'Studio Name'+" Class Per Day" as 'Modality Name', 
+    'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month',
+    number_to_string(sum('Attendance Count')/31/100, "#.00%") as 'Attendance Count';
+
+
+-- query subtotal of attendance count goup by year-month
+-- q_subTotal = group q by ('Schedul.Studio_Name__c', 'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month');
+-- r_subTotal = foreach q_subTotal generate "Total" as 'Schedul.Studio_Name__c', 'Schedul.Class_Start_Time__c_Year' + "~~~" + 'Schedul.Class_Start_Time__c_Month' as 'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month', count() as 'count';
+-- r_classPerDay = foreach q_subTotal generate 'Schedul.Studio_Name__c' as 'Schedul.Studio_Name__c', "Class Per Day", 'Schedul.Class_Start_Time__c_Year' + "~~~" + 'Schedul.Class_Start_Time__c_Month' as 'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month', count()/30 as 'count';
+
+-- query total of attendance count
+-- q_total = group q by all;
+-- r_total = foreach q_total generate "Total" as 'Schedul.Studio_Name__c', count() as 'count';
+
+-- order by studio, modality, classroom, year-month
+r_count = order r_count by ('Studio Name' asc, 'Modality Name' asc, 'Classroom Name' asc, 'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month' asc);
+
+-- union data
+r_count = union r_count
+                ,r_subTotalOfStudio
+                ,r_classPerDayOfStudio
+--                 ,r_subTotal
+--                 -- ,r_classPerDay
+--                 -- ,r_total
+                ;
+
+-- render data in limit
+r_count = limit r_count 2000;
+-- r_subTotalOfStudio = limit r_subTotalOfStudio 200;
+-- r_total = limit r_total 2000;
+
