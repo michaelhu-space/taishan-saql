@@ -1,4 +1,5 @@
 q = load "Dataset_Class_Attendance";
+
 q = foreach q generate 
 	'Account.Channel__pc' as 'Account.Channel__pc',
 	'Account.Gender__pc' as 'Account.Gender__pc',
@@ -20,6 +21,9 @@ q = foreach q generate
 	'Program.Name' as 'Program.Name',
 	'RecordT.Name' as 'RecordT.Name',
 	'Checkin_Time__c' as 'Checkin_Time__c',
+	'Request_Type__c' as 'Request_Type__c',
+	'Operation_Status__c' as 'Operation_Status__c',
+	'Reservation_Status__c' as 'Reservation_Status__c',
 	'Schedul.Capacity__c' as 'Schedul.Capacity__c',
 	'Schedul.Class_Start_Time__c' as 'Schedul.Class_Start_Time__c',
 	'Schedul.Consumed_Classes__c' as 'Schedul.Consumed_Classes__c',

@@ -1,6 +1,4 @@
-
 q = load "Dataset_Class_Attendance";
-
 
 -- query attendance count goup by studio, modality, classroom, year-month
 q_count = group q by ('Schedul.Studio_Name__c', 'Modalit.Name', 'Classro.Name', 'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month', 'Id');
