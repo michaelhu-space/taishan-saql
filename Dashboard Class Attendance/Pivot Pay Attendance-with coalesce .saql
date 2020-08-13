@@ -4,16 +4,16 @@ q_B = filter q by 'Members_Average_Price_c_AVG' == 0 && !('Account.Identity__c' 
 q_C = filter q by 'Account.Identity__c' in ["Employee", "Employee Family"] && 'Members.Product__c'=="01t2x000000dYP4AAM";
 q_D = filter q by 'Account.Identity__c' in ["Employee", "Employee Family"] && 'Members.Product__c'=="01t2x000000dYWPAA2";
 
-result = cogroup 	q_A by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month') full, 
-                	q_B by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month') full,
-                	q_C by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month') full,
-                	q_D by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month');
+result = group  q_A by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month'), 
+                q_B by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month'),
+                q_C by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month'),
+                q_D by ('Schedul.Studio_Name__c', 'Schedul_Schedule_Class_Start_Time_Year_Month');
 
 result = foreach result generate 
 	coalesce(
-			q_A.'Schedul.Studio_Name__c', 
-			q_B.'Schedul.Studio_Name__c',
-			q_C.'Schedul.Studio_Name__c',
+			q_A.'Schedul.Studio_Name__c' null, 
+			q_B.'Schedul.Studio_Name__c' null,
+			q_C.'Schedul.Studio_Name__c' null,
 			q_D.'Schedul.Studio_Name__c'
 			) as 'Schedul.Studio_Name__c', 
 
