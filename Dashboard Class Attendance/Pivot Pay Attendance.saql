@@ -1,5 +1,5 @@
 q = load "Dataset_Pay_Attendance";
-q_A = filter q by 'Members_Average_Price_c_AVG' != 0 && !('Account.Identity__c' in ["Employee", "Employee Family"]);
+q_A = filter q by 'Members_Average_Price_c_AVG' > 0 && !('Account.Identity__c' in ["Employee", "Employee Family"]);
 q_B = filter q by 'Members_Average_Price_c_AVG' == 0 && !('Account.Identity__c' in ["Employee", "Employee Family"]);
 q_C = filter q by 'Account.Identity__c' in ["Employee", "Employee Family"] && 'Members.Product__c'=="01t2x000000dYP4AAM";
 q_D = filter q by 'Account.Identity__c' in ["Employee", "Employee Family"] && 'Members.Product__c'=="01t2x000000dYWPAA2";
