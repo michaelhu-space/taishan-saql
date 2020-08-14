@@ -1,7 +1,9 @@
 q = load "Dataset_Class_Attendance";
 
 -- query attendance count goup by studio, modality, classroom, year-month
-q_count = group q by ('Schedul.Studio_Name__c', 'Modalit.Name', 'Classro.Name', 'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month', 'Id');
+q_count = group q by (  'Schedul.Studio_Name__c', 'Modalit.Name', 'Classro.Name', 
+                        'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month', 
+                        'Schedul.Id');
 
 
 r_count = foreach q_count generate 
@@ -10,16 +12,19 @@ r_count = foreach q_count generate
                 'Classro.Name' as 'Classro.Name', 
                 'Schedul.Class_Start_Time__c_Year' as 'Schedul.Class_Start_Time__c_Year',
                 'Schedul.Class_Start_Time__c_Month' as 'Schedul.Class_Start_Time__c_Month', 
-                'Id' as 'Id';
+                'Schedul.Id' as 'Schedul.Id';
 
-r_count = group r_count by ('Schedul.Studio_Name__c', 'Modalit.Name', 'Classro.Name', 'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month');
+r_count = group r_count by (
+        'Schedul.Studio_Name__c', 'Modalit.Name', 'Classro.Name', 
+        'Schedul.Class_Start_Time__c_Year', 'Schedul.Class_Start_Time__c_Month'
+    );
 
 r_count = foreach r_count generate 
                 'Schedul.Studio_Name__c' as 'Studio Name', 
                 'Modalit.Name' as 'Modality Name', 
                 'Classro.Name' as 'Classroom Name', 
                 'Schedul.Class_Start_Time__c_Year' + "~~~" + 'Schedul.Class_Start_Time__c_Month' as 'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month', 
-                count() as 'Attendance Count';
+                count() as 'Schedule Count';
 
 
 -- query subtotal of attendance count goup by studio, year-month
@@ -29,13 +34,13 @@ r_subTotalOfStudio = foreach q_subTotalOfStudio generate
     'Studio Name', 
     'Studio Name'+" Sub Total" as 'Modality Name', 
     'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month',
-    sum('Attendance Count') as 'Attendance Count';
+    sum('Schedule Count') as 'Schedule Count';
 
 r_classPerDayOfStudio = foreach r_subTotalOfStudio generate 
     'Studio Name', 
     'Studio Name'+" Class Per Day" as 'Modality Name', 
     'Schedul.Class_Start_Time__c_Year~~~Schedul.Class_Start_Time__c_Month',
-    number_to_string(sum('Attendance Count')/31/100, "#.00%") as 'Attendance Count';
+    number_to_string(sum('Schedule Count')/31/100, "#.00%") as 'Schedule Count';
 
 
 -- order by studio, modality, classroom, year-month

@@ -1,8 +1,9 @@
 q = load "Dataset_Schedule_Attendance";
 
-result_rate = group q by ('Modalit.Name', 'Schedul_Schedule_Class_Start_Time_Year_Month');
+result_rate = group q by ('Schedul.Studio_Name__c', 'Modalit.Name', 'Schedul_Schedule_Class_Start_Time_Year_Month');
 
 result_rate = foreach result_rate generate 
+    'Schedul.Studio_Name__c' as 'Schedul.Studio_Name__c', 
     'Modalit.Name' as 'Modalit.Name', 
     'Schedul_Schedule_Class_Start_Time_Year_Month' as 'Schedul_Schedule_Class_Start_Time_Year_Month', 
     sum('Schedul_Capacity_c_AVG') as 'Capacity',
