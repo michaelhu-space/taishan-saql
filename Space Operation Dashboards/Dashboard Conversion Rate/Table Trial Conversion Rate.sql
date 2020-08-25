@@ -1,57 +1,94 @@
 q = load "Recipe_Conversion_Rate";
 
--- trial converted
-q_registered = filter q by 'Account.Is_Newcomer__c'==true;
-
-q_tried = filter q by 'Account.Is_Newcomer__c'==true;
-
--- trial converted
-q_trial_converted = filter q by 'Trial_Transfer_Membership__c' is not null;
--- Renew converted
-q_renew_converted = filter q by 'Renew_Transfer_Membership__c' is not null;
 
 
--- this month trial
-q_trial_converted_this_month = filter q_trial_converted by 
-		date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["current month" .. "current month"]
+
+
+-- register only this month
+q_registered_only = filter q by 
+		date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["current month" .. "current month"]
+	&& 	'Account.Is_Newcomer__c'=="true";
+q_registered_only = foreach q_registered_only generate 
+        'Studio_.Name',
+		unique('Account.Person_Mobile_Phone__c') as 'Account.Person_Mobile_Phone__c';
+-- get registered only user count
+q_registered_only =  group q_registered_only by ('Studio_.Name');
+q_registered_only = foreach q_registered_only generate
+        'Studio_.Name',
+        sum('Account.Person_Mobile_Phone__c') as 'Account.Person_Mobile_Phone__c';
+-- q_registered_only = limit q_registered_only 2000;
+
+
+
+
+
+
+
+-- trial converted this month
+q_trial_this_month = filter q by 'Plan__c' == "Trial"
+	&& 	date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["current month" .. "current month"];
+	
+q_trial_converted_this_month = filter q by 'Trial_Transfer_Membership__c' is not null
+	&&	date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["current month" .. "current month"]
 	&& 	date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["current month" .. "current month"];
 
--- last month trial
-q_trial_converted_last_month = filter q_trial_converted by 
-		date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["1 month ago" .. "1 month ago"] 
+-- trial converted last month 
+q_trial_last_month = filter q by 'Plan__c' == "Trial"
+	&& 	date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["1 month ago" .. "1 month ago"];
+
+q_trial_converted_last_month = filter q by 'Trial_Transfer_Membership__c' is not null
+	&&	date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["1 month ago" .. "1 month ago"] 
 	&& 	date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["current month" .. "current month"];
 
--- this month reniew
--- q_renew_converted_this_month = filter q_renew_converted by 
--- 		date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["1 month ago" .. "1 month ago"],
--- 	&& 	date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["current month" .. "current month"];
+
+-- reniew converted
+q_renew_converted = filter q by 'Renew_Transfer_Membership__c' is not null
+	&&	date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["1 month ago" .. "current month"]
+	&& 	date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["current month" .. "current month"];
+
+
+
 
 
 -- get this month trial converted group by Dimensions 
-q_trial_converted_this_month =  group q_trial_converted_this_month by ('Order.Sold_Studio__c', 'Databas.Product.Name', 'Id');
+q_trial_converted_this_month =  group q_trial_converted_this_month by ('Studio_.Name', 'Databas.Product.Name', 'Id');
 q_trial_converted_this_month = foreach q_trial_converted_this_month generate 
+		'Studio_.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'Account.Person_Mobile_Phone__c',
 		average('Average_Price__c') as 'Average_Price__c';
-q_trial_converted_this_month = limit q_trial_converted_this_month 2000;
+-- q_trial_converted_this_month = limit q_trial_converted_this_month 2000;
+
 
 -- get last month trial converted group by Dimensions 
--- q_trial_converted_last_month =  group q_trial_converted_last_month by ('Order.Sold_Studio__c', 'Databas.Product.Name');
--- q_trial_converted_last_month = foreach q_trial_converted_last_month generate 
--- 		unique('Account.Person_Mobile_Phone__c') as 'Account.Person_Mobile_Phone__c';
--- q_trial_last_month = limit q_trial_last_month 2000;
+q_trial_converted_last_month =  group q_trial_converted_last_month by ('Studio_.Name', 'Databas.Product.Name');
+q_trial_converted_last_month = foreach q_trial_converted_last_month generate 
+		'Studio_.Name',
+		unique('Account.Person_Mobile_Phone__c') as 'Account.Person_Mobile_Phone__c',
+		average('Average_Price__c') as 'Average_Price__c';
+-- q_trial_converted_last_month = limit q_trial_converted_last_month 2000;
+
+
+-- get this month renew converted group by Dimensions 
+q_renew_converted =  group q_renew_converted by ('Studio_.Name', 'Databas.Product.Name');
+q_renew_converted = foreach q_renew_converted generate 
+		'Studio_.Name',
+		unique('Account.Person_Mobile_Phone__c') as 'Account.Person_Mobile_Phone__c',
+		average('Average_Price__c') as 'Average_Price__c';
+-- q_trial_converted_last_month = limit q_trial_converted_last_month 2000;
 
 
 
--- result = cogroup 	q_trial_this_month by ('Order.Sold_Studio__c', 'Databas.Product.Name') full, 
---                 	q_trial_last_month by ('Order.Sold_Studio__c', 'Databas.Product.Name') 
---                 	-- q_renew_this_month by ('Order.Sold_Studio__c', '') 
+
+-- result = cogroup 	q_trial_this_month by ('Studio_.Name', 'Databas.Product.Name') full, 
+--                 	q_trial_last_month by ('Studio_.Name', 'Databas.Product.Name') 
+--                 	-- q_renew_this_month by ('Studio_.Name', '') 
 --                 	;
 
 -- r_table = foreach q generate 
 -- 		coalesce(
--- 			q_A.'Order.Sold_Studio__c', 
--- 			q_B.'Order.Sold_Studio__c'
--- 			) as 'Order.Sold_Studio__c', 
+-- 			q_A.'Studio_.Name', 
+-- 			q_B.'Studio_.Name'
+-- 			) as 'Studio_.Name', 
 
 -- 	coalesce(
 -- 		q_A.'Databas.Product.Name', 
