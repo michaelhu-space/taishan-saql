@@ -1,25 +1,50 @@
 q = load "Recipe_Conversion_Rate";
 
 
--- memberships last month
-q_trial_last_month = filter q by 'Plan__c' != "Trial"
-	&&	date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["1 month ago" .. "current month"]
-q_trial_last_month =  group q_trial_last_month by ('Studio_.Name', 'Databas.Product.Name', 'Id');	
-q_trial_last_month = foreach q_trial_last_month generate 
+-- burned 2 months from this month
+q_burned_this_month = filter q by ( 'Average_Price__c' != 0 || 'Plan__c' != "Trial" )
+	&&(		date('End_Date__c_Year', 'End_Date__c_Month', 'End_Date__c_Day') in ["1 month ago" .. "current month"]
+		|| ('Main_Total_Class__c' > 5 && 'Main_Total_Available__c'<=5)
+	);
+
+q_burned_this_month =  group q_burned_this_month by ('Studio_.Name', 'Id');	
+q_burned_this_month = foreach q_burned_this_month generate 
 		'Studio_.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile';
--- q_trial_last_month = limit q_trial_last_month 2000;
 
--- reniew converted
-q_renew_converted = filter q by 'Renew_Transfer_Membership__c' is not null
-	&&	date('Databas.CreatedDate_Year', 'Databas.CreatedDate_Month', 'Databas.CreatedDate_Day') in ["1 month ago" .. "current month"]
-	&& 	date('CreatedDate_Year', 'CreatedDate_Month', 'CreatedDate_Day') in ["current month" .. "current month"];
 
--- get this month renew converted group by Dimensions 
-q_renew_converted =  group q_renew_converted by ('Studio_.Name', 'Databa1.Product.Name');
-q_renew_converted = foreach q_renew_converted generate 
+-- renew converted this month
+q_renew_converted_this_month = filter q by 'Last_Purchase_Membership__c' is not null
+	&&  'Type_Of_Sale__c' in ["BurnedRenewCurrent", "BurnedRenewLast"]
+	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
+
+q_renew_converted_this_month =  group q_renew_converted_this_month by ('Studio_.Name', 'Id');
+q_renew_converted_this_month = foreach q_renew_converted_this_month generate 
 		'Studio_.Name',
-		unique('Account.Person_Mobile_Phone__c') as 'Account.Person_Mobile_Phone__c',
-		average('Average_Price__c') as 'Average_Price__c';
+		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile',
+		average('Order_Item_Payment_Price__c') as 'Order_Item_Payment_Price__c';
 
-q_renew_converted = limit q_renew_converted 2000;
+
+
+result = cogroup 	q_burned_this_month 			by ('Studio_.Name') full, 
+                	q_renew_converted_this_month 	by ('Studio_.Name') 
+                	;
+
+r_renew_converted_this_month = foreach result generate 
+	coalesce(
+			q_burned_this_month.'Studio_.Name', 
+			q_renew_converted_this_month.'Studio_.Name'
+			) as 'Studio_.Name',
+	
+	sum(q_burned_this_month.'unique_mobile') as 'Burned amount this month', 
+	sum(q_renew_converted_this_month.'unique_mobile') as 'Renew Converted amount this month',
+	number_to_string(sum(q_renew_converted_this_month.'unique_mobile')/sum(q_burned_this_month.'unique_mobile'), "#.00%") as 'Converted Rate',
+
+	sum(q_renew_converted_this_month.'Order_Item_Payment_Price__c') as 'Sum of converted packages',
+	number_to_string(sum(q_renew_converted_this_month.'Order_Item_Payment_Price__c')/sum(q_renew_converted_this_month.'unique_mobile'), "#.00") as 'price per customer';
+	;
+
+r_renew_converted_this_month = order r_renew_converted_this_month by ('Studio_.Name' asc);
+
+r_renew_converted_this_month = limit r_renew_converted_this_month 2000;
+
