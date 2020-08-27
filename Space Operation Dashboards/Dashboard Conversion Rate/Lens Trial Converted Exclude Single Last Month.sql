@@ -9,9 +9,9 @@ q_trial_last_month = filter q_membership by (
 	&& 	'Main_Total_Class__c' > 1
 	&&  'Reserva.Operation_Status__c' == "Check In"
 	&& 	date('Reserva.Checkin_Time__c_Year', 'Reserva.Checkin_Time__c_Month', 'Reserva.Checkin_Time__c_Day') in ["1 month ago" .. "1 month ago"];
-q_trial_last_month =  group q_trial_last_month by ('Studio_.Name', 'Product.Name', 'Id');	
+q_trial_last_month =  group q_trial_last_month by ('Schedul.Studio_Name__c', 'Product.Name', 'Id');	
 q_trial_last_month = foreach q_trial_last_month generate 
-		'Studio_.Name',
+		'Schedul.Studio_Name__c',
 		'Product.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile';
 
@@ -32,13 +32,13 @@ q_trial_converted_last_month = foreach q_trial_converted_last_month generate
 
 
 
-result = cogroup 	q_trial_last_month 				by ('Studio_.Name', 'Product.Name') full, 
+result = cogroup 	q_trial_last_month 				by ('Schedul.Studio_Name__c', 'Product.Name') full, 
                 	q_trial_converted_last_month 	by ('Studio_.Name', 'Databas.Product.Name') 
                 	;
 
 r_trial_converted_last_month = foreach result generate 
 	coalesce(
-			q_trial_last_month.'Studio_.Name', 
+			q_trial_last_month.'Schedul.Studio_Name__c', 
 			q_trial_converted_last_month.'Studio_.Name'
 			) as 'Studio Name',
 	coalesce(

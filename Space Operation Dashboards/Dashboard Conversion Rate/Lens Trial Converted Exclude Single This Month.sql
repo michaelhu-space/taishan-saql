@@ -2,16 +2,17 @@ q_membership = load "Database_Membership";
 q_conversion = load "Recipe_Conversion_Rate";
 
 -- trial this month
-q_trial_this_month = filter q_membership by (
+q_trial_this_month = filter q_membership by 
+	(
 	-- 'Average_Price__c' == 0 || 
 	'Plan__c' == "Trial"
 	 )
 	&& 	'Main_Total_Class__c' > 1
 	&&  'Reserva.Operation_Status__c' == "Check In"
 	&& 	date('Reserva.Checkin_Time__c_Year', 'Reserva.Checkin_Time__c_Month', 'Reserva.Checkin_Time__c_Day') in ["current month" .. "current month"];
-q_trial_this_month =  group q_trial_this_month by ('Studio_.Name', 'Product.Name', 'Id');	
+q_trial_this_month =  group q_trial_this_month by ('Schedul.Studio_Name__c', 'Product.Name', 'Id');	
 q_trial_this_month = foreach q_trial_this_month generate 
-		'Studio_.Name',
+		'Schedul.Studio_Name__c',
 		'Product.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile';
 
@@ -32,13 +33,13 @@ q_trial_converted_this_month = foreach q_trial_converted_this_month generate
 
 
 
-result = cogroup 	q_trial_this_month 				by ('Studio_.Name', 'Product.Name') full, 
+result = cogroup 	q_trial_this_month 				by ('Schedul.Studio_Name__c', 'Product.Name') full, 
                 	q_trial_converted_this_month 	by ('Studio_.Name', 'Databas.Product.Name') 
                 	;
 
 r_trial_converted_this_month = foreach result generate 
 	coalesce(
-			q_trial_this_month.'Studio_.Name', 
+			q_trial_this_month.'Schedul.Studio_Name__c', 
 			q_trial_converted_this_month.'Studio_.Name'
 			) as 'Studio Name',
 	coalesce(
