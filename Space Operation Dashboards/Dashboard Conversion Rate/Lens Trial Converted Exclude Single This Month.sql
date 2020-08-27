@@ -6,6 +6,7 @@ q_trial_this_month = filter q_membership by (
 	-- 'Average_Price__c' == 0 || 
 	'Plan__c' == "Trial"
 	 )
+	&& 	'Main_Total_Class__c' > 1
 	&&  'Reserva.Operation_Status__c' == "Check In"
 	&& 	date('Reserva.Checkin_Time__c_Year', 'Reserva.Checkin_Time__c_Month', 'Reserva.Checkin_Time__c_Day') in ["current month" .. "current month"];
 q_trial_this_month =  group q_trial_this_month by ('Studio_.Name', 'Product.Name', 'Id');	
@@ -18,6 +19,7 @@ q_trial_this_month = foreach q_trial_this_month generate
 -- trial converted this month
 q_trial_converted_this_month = filter q_conversion by 'Last_Purchase_Membership__c' is not null
 	&&  'Type_Of_Sale__c' in ["FreeTrialNewCurrent", "PaidTrialNewCurrent", "CombinedTrialNewCurrent"]
+	&& 	'Databas.Main_Total_Class__c' > 1
 	&& 	date('Databas.Reserva.Checkin_Time__c_Year', 'Databas.Reserva.Checkin_Time__c_Month', 'Databas.Reserva.Checkin_Time__c_Day') in ["current month" .. "current month"]
 	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
 
