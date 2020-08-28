@@ -4,7 +4,7 @@ q = load "Recipe_Conversion_Rate";
 -- register only this month
 q_registered_only = filter q by 
 		date('Databas.Order_Create_Date__c_Year', 'Databas.Order_Create_Date__c_Month', 'Databas.Order_Create_Date__c_Day') 
-		in ["current month" .. "current month"]
+		in ["1 month ago" .. "current month"]
 	&& 	'Account.Is_Newcomer__c'=="true";
 	
 q_registered_only = foreach q_registered_only generate 

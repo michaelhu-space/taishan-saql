@@ -8,7 +8,7 @@ q_trial_last_month = filter q_membership by (
 	 )
 	&&  'Reserva.Operation_Status__c' == "Check In"
 	&& 	date('Reserva.Checkin_Time__c_Year', 'Reserva.Checkin_Time__c_Month', 'Reserva.Checkin_Time__c_Day') in ["1 month ago" .. "1 month ago"];
-q_trial_last_month =  group q_trial_last_month by ('Schedul.Studio_Name__c', 'Product.Name', 'Id');	
+q_trial_last_month =  group q_trial_last_month by ('Schedul.Studio_Name__c', 'Product.Name', 'Account.Person_Mobile_Phone__c');	
 q_trial_last_month = foreach q_trial_last_month generate 
 		'Schedul.Studio_Name__c',
 		'Product.Name',
@@ -21,7 +21,7 @@ q_trial_converted_last_month = filter q_conversion by 'Last_Purchase_Membership_
 	&& 	date('Databas.Reserva.Checkin_Time__c_Year', 'Databas.Reserva.Checkin_Time__c_Month', 'Databas.Reserva.Checkin_Time__c_Day') in ["1 month ago" .. "1 month ago"]
 	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
 
-q_trial_converted_last_month =  group q_trial_converted_last_month by ('Studio_.Name', 'Databas.Product.Name', 'Id');
+q_trial_converted_last_month =  group q_trial_converted_last_month by ('Studio_.Name', 'Databas.Product.Name', 'Account.Person_Mobile_Phone__c');
 q_trial_converted_last_month = foreach q_trial_converted_last_month generate 
 		'Studio_.Name',
 		'Databas.Product.Name',
@@ -45,7 +45,7 @@ r_trial_converted_last_month = foreach result generate
 			) as 'Product Name',
 	
 	sum(q_trial_last_month.'unique_mobile') as 'Trial amount last month', 
-	sum(q_trial_converted_last_month.'unique_mobile') as 'Converted amount last month',
+	sum(q_trial_converted_last_month.'unique_mobile') as 'Converted amount this month',
 	number_to_string(sum(q_trial_converted_last_month.'unique_mobile')/sum(q_trial_last_month.'unique_mobile'), "#.00%") as 'Converted Rate',
 
 	sum(q_trial_converted_last_month.'Order_Item_Payment_Price__c') as 'Sum of converted packages',
@@ -59,10 +59,10 @@ r_total = foreach q_total generate
     'Studio Name', 
     " " + 'Studio Name' + " 合计" as 'Product Name',
     sum('Trial amount last month') as 'Trial amount last month',
-    sum('Converted amount last month') as 'Converted amount last month',
-	number_to_string(sum('Converted amount last month')/sum('Trial amount last month'), "#.00%") as 'Converted Rate',
+    sum('Converted amount this month') as 'Converted amount this month',
+	number_to_string(sum('Converted amount this month')/sum('Trial amount last month'), "#.00%") as 'Converted Rate',
 	sum('Sum of converted packages') as 'Sum of converted packages',
-	number_to_string(sum('Sum of converted packages')/sum('Converted amount last month'), "#.00") as 'price per customer';
+	number_to_string(sum('Sum of converted packages')/sum('Converted amount this month'), "#.00") as 'price per customer';
 
 r_trial_converted_last_month = union r_trial_converted_last_month
                 ,r_total

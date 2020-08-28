@@ -5,7 +5,7 @@ q = load "Recipe_Conversion_Rate";
 q_expired_3_months = filter q by ( 'Average_Price__c' != 0 || 'Plan__c' != "Trial" )
 	&& date('End_Date__c_Year', 'End_Date__c_Month', 'End_Date__c_Day') in [null .. "2 month ago"];
 
-q_expired_3_months =  group q_expired_3_months by ('Studio_.Name', 'Id');	
+q_expired_3_months =  group q_expired_3_months by ('Studio_.Name', 'Account.Person_Mobile_Phone__c');	
 q_expired_3_months = foreach q_expired_3_months generate 
 		'Studio_.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile';
@@ -16,7 +16,7 @@ q_return_converted_this_month = filter q by 'Last_Purchase_Membership__c' is not
 	&&  'Type_Of_Sale__c' in ["Return"]
 	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
 
-q_return_converted_this_month =  group q_return_converted_this_month by ('Studio_.Name', 'Id');
+q_return_converted_this_month =  group q_return_converted_this_month by ('Studio_.Name', 'Account.Person_Mobile_Phone__c');
 q_return_converted_this_month = foreach q_return_converted_this_month generate 
 		'Studio_.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile',

@@ -9,7 +9,7 @@ q_trial_this_month = filter q_membership by
 	 )
 	&&  'Reserva.Operation_Status__c' == "Check In"
 	&& 	date('Reserva.Checkin_Time__c_Year', 'Reserva.Checkin_Time__c_Month', 'Reserva.Checkin_Time__c_Day') in ["current month" .. "current month"];
-q_trial_this_month =  group q_trial_this_month by ('Schedul.Studio_Name__c', 'Product.Name', 'Id');	
+q_trial_this_month =  group q_trial_this_month by ('Schedul.Studio_Name__c', 'Product.Name', 'Account.Person_Mobile_Phone__c');	
 q_trial_this_month = foreach q_trial_this_month generate 
 		'Schedul.Studio_Name__c',
 		'Product.Name',
@@ -19,14 +19,10 @@ q_trial_this_month = foreach q_trial_this_month generate
 -- trial converted this month
 q_trial_converted_this_month = filter q_conversion by 'Last_Purchase_Membership__c' is not null
 	&&  'Type_Of_Sale__c' in ["FreeTrialNewCurrent", "PaidTrialNewCurrent", "CombinedTrialNewCurrent"]
-	&& 	date('Databas.Reserva.Checkin_Time__c_Year', 'Databas.Reserva.Checkin_Time__c_Month', 'Databas.Reserva.Checkin_Time__c_Day') in 
-	["{{cell(StaticStart_1.selection, 0, "value").asString()}}".."{{cell(StaticStart_1.selection, 0, "value").asString()}}"]
+	&& 	date('Databas.Reserva.Checkin_Time__c_Year', 'Databas.Reserva.Checkin_Time__c_Month', 'Databas.Reserva.Checkin_Time__c_Day') in ["current month" .. "current month"]
+	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
 
-	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in 
-	["{{cell(StaticStart_1.selection, 0, "value").asString()}}".."{{cell(StaticStart_1.selection, 0, "value").asString()}}"]
-	;
-
-q_trial_converted_this_month =  group q_trial_converted_this_month by ('Studio_.Name', 'Databas.Product.Name', 'Id');
+q_trial_converted_this_month =  group q_trial_converted_this_month by ('Studio_.Name', 'Databas.Product.Name', 'Account.Person_Mobile_Phone__c');
 q_trial_converted_this_month = foreach q_trial_converted_this_month generate 
 		'Studio_.Name',
 		'Databas.Product.Name',

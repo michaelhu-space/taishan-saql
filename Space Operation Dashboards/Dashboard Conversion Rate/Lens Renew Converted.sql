@@ -7,7 +7,7 @@ q_burned_this_month = filter q by ( 'Average_Price__c' != 0 || 'Plan__c' != "Tri
 		|| ('Main_Total_Class__c' > 5 && 'Main_Total_Available__c'<=5)
 	);
 
-q_burned_this_month =  group q_burned_this_month by ('Studio_.Name', 'Id');	
+q_burned_this_month =  group q_burned_this_month by ('Studio_.Name', 'Account.Person_Mobile_Phone__c');	
 q_burned_this_month = foreach q_burned_this_month generate 
 		'Studio_.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile';
@@ -18,7 +18,7 @@ q_renew_converted_this_month = filter q by 'Last_Purchase_Membership__c' is not 
 	&&  'Type_Of_Sale__c' in ["BurnedRenewCurrent", "BurnedRenewLast"]
 	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
 
-q_renew_converted_this_month =  group q_renew_converted_this_month by ('Studio_.Name', 'Id');
+q_renew_converted_this_month =  group q_renew_converted_this_month by ('Studio_.Name', 'Account.Person_Mobile_Phone__c');
 q_renew_converted_this_month = foreach q_renew_converted_this_month generate 
 		'Studio_.Name',
 		unique('Account.Person_Mobile_Phone__c') as 'unique_mobile',
