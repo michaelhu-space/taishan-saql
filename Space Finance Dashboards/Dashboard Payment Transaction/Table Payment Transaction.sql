@@ -42,5 +42,5 @@ r_table = foreach q generate
 		'Tax_Rate__c' as 'Tax_Rate__c'
 		;
 
-r_table = limit r_table 1000;
+r_table = limit r_table 50000;
 
