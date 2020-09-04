@@ -12,7 +12,6 @@ q_primary_instructor = foreach q_primary_instructor generate
 		"" as 'Assistant Instructor',
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
-		'Program.Name',
 		unique('Id') as 'Id';
 
 
@@ -29,7 +28,6 @@ q_substitute_instructor = foreach q_substitute_instructor generate
 		"" as 'Assistant Instructor',
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
-		'Program.Name',
 		unique('Id') as 'Id';
 
 
@@ -45,7 +43,6 @@ q_assistant_instructor = foreach q_assistant_instructor generate
 		'J_Instr.Instructor_Name__c' as 'Assistant Instructor',
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
-		'Program.Name',
 		unique('Id') as 'Id';
 
 
