@@ -13,8 +13,19 @@ q_primary_instructor = foreach q_primary_instructor generate
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
 		'Program.Name',
-		unique('Id') as 'Id';
+		unique('Id') as 'unique_Id';
+q_primary_instructor = group q_primary_instructor by rollup ('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name','Program.Name'); 
+q_primary_instructor = foreach q_primary_instructor generate 
+		
+	    'Primary Instructor',
+		'Substitute Instructor',
+		'Assistant Instructor',
+		(case
+	        when grouping('Modalit.Name') == 1 then "～ Total"
+	        else 'Modalit.Name'
+	    end) as 'Modalit.Name',
 
+		sum('unique_Id') as 'Attendance Count';
 
 
 -- Substitute instructor
@@ -30,7 +41,17 @@ q_substitute_instructor = foreach q_substitute_instructor generate
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
 		'Program.Name',
-		unique('Id') as 'Id';
+		unique('Id') as 'unique_Id';
+q_substitute_instructor = group q_substitute_instructor by rollup('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name','Program.Name'); 
+q_substitute_instructor = foreach q_substitute_instructor generate 
+		'Primary Instructor',
+		'Substitute Instructor',
+		'Assistant Instructor',
+		(case
+	        when grouping('Modalit.Name') == 1 then "～ Total"
+	        else 'Modalit.Name'
+	    end) as 'Modalit.Name',
+		sum('unique_Id') as 'Attendance Count';
 
 
 -- Assistant instructor
@@ -46,7 +67,17 @@ q_assistant_instructor = foreach q_assistant_instructor generate
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
 		'Program.Name',
-		unique('Id') as 'Id';
+		unique('Id') as 'unique_Id';
+q_assistant_instructor = group q_assistant_instructor by rollup('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name','Program.Name'); 
+q_assistant_instructor = foreach q_assistant_instructor generate 
+		'Primary Instructor',
+		'Substitute Instructor',
+		'Assistant Instructor',
+		(case
+	        when grouping('Modalit.Name') == 1 then "～ Total"
+	        else 'Modalit.Name'
+	    end) as 'Modalit.Name',
+		sum('unique_Id') as 'Attendance Count';
 
 
 
@@ -87,10 +118,10 @@ r_instructor_fill_rate = foreach q_instructor_fill_rate generate
 				) as 'Modalit.Name',
 
 				coalesce(
-					sum(q_primary_instructor.'Id'), 
-					sum(q_substitute_instructor.'Id'), 
-					sum(q_assistant_instructor.'Id')
-				) as 'Instructor Attendance Count'
+					average(q_primary_instructor.'Attendance Count'), 
+					average(q_substitute_instructor.'Attendance Count'), 
+					average(q_assistant_instructor.'Attendance Count')
+				) as 'Attendance Count'
 				;
 
 				
