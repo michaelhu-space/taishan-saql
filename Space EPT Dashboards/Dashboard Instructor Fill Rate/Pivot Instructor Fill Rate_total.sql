@@ -1,10 +1,13 @@
 q = load "Dataset_Schedule_Fill_Rate";
 
+q = filter q by date('Class_Start_Time__c_Year', 'Class_Start_Time__c_Month', 'Class_Start_Time__c_Day') in [dateRange([2020,6,01], [2020,6,30])];
+
 -- Primary instructor
 q_primary_instructor = filter q by 
 		'Status__c' == "Published"
 		&& 'J_Instr.Is_Active__c' == "true"
 		&& 'J_Instr.Instructor_Role__c' == "Primary Instructor"
+		-- && 'J_Instr.Instructor_Name__c' == "王磊 Ray"
 ;
 q_primary_instructor = foreach q_primary_instructor generate 
 		'J_Instr.Instructor_Name__c' as 'Primary Instructor',
@@ -12,9 +15,8 @@ q_primary_instructor = foreach q_primary_instructor generate
 		"" as 'Assistant Instructor',
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
-		'Program.Name',
 		unique('Id') as 'unique_Id';
-q_primary_instructor = group q_primary_instructor by rollup ('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name','Program.Name'); 
+q_primary_instructor = group q_primary_instructor by rollup ('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name'); 
 q_primary_instructor = foreach q_primary_instructor generate 
 		
 	    'Primary Instructor',
@@ -40,11 +42,14 @@ q_substitute_instructor = foreach q_substitute_instructor generate
 		"" as 'Assistant Instructor',
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
-		'Program.Name',
 		unique('Id') as 'unique_Id';
-q_substitute_instructor = group q_substitute_instructor by rollup('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name','Program.Name'); 
+q_substitute_instructor = group q_substitute_instructor by rollup('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name'); 
 q_substitute_instructor = foreach q_substitute_instructor generate 
-		'Primary Instructor',
+		-- make sure dataset substitue doesn't have the total for primary instructor
+		(case
+	        when grouping('Modalit.Name') == 1 then ""
+	        else 'Primary Instructor'
+	    end) as 'Primary Instructor',
 		'Substitute Instructor',
 		'Assistant Instructor',
 		(case
@@ -66,9 +71,8 @@ q_assistant_instructor = foreach q_assistant_instructor generate
 		'J_Instr.Instructor_Name__c' as 'Assistant Instructor',
 		'J_Instr.Instructor_Role__c',
 		'Modalit.Name',
-		'Program.Name',
 		unique('Id') as 'unique_Id';
-q_assistant_instructor = group q_assistant_instructor by rollup('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name','Program.Name'); 
+q_assistant_instructor = group q_assistant_instructor by rollup('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name'); 
 q_assistant_instructor = foreach q_assistant_instructor generate 
 		'Primary Instructor',
 		'Substitute Instructor',
@@ -124,16 +128,6 @@ r_instructor_fill_rate = foreach q_instructor_fill_rate generate
 				) as 'Attendance Count'
 				;
 
-				
--- q_instructor_total = group r_instructor_fill_rate by rollup ('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name');
--- r_instructor_total = foreach q_instructor_total generate 
--- 				'Primary Instructor',
--- 				'Substitute Instructor',
--- 				'Assistant Instructor',
--- 				" total: " as 'Modalit.Name',
--- 				sum('Instructor Attendance Count') as 'Instructor Attendance Count'
-				;
--- r_instructor_fill_rate = union r_instructor_fill_rate,r_instructor_total;
 		
 r_instructor_fill_rate = order r_instructor_fill_rate by ( 'Primary Instructor' asc, 'Substitute Instructor' asc);
 r_instructor_fill_rate = limit r_instructor_fill_rate 10000;

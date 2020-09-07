@@ -90,16 +90,7 @@ r_instructor_fill_rate = foreach q_instructor_fill_rate generate
 				) as 'Instructor Attendance Count'
 				;
 
-				
--- q_instructor_total = group r_instructor_fill_rate by rollup ('Primary Instructor','Substitute Instructor','Assistant Instructor','Modalit.Name');
--- r_instructor_total = foreach q_instructor_total generate 
--- 				'Primary Instructor',
--- 				'Substitute Instructor',
--- 				'Assistant Instructor',
--- 				" total: " as 'Modalit.Name',
--- 				sum('Instructor Attendance Count') as 'Instructor Attendance Count'
-				;
--- r_instructor_fill_rate = union r_instructor_fill_rate,r_instructor_total;
+			
 		
 r_instructor_fill_rate = order r_instructor_fill_rate by ( 'Primary Instructor' asc, 'Substitute Instructor' asc);
 r_instructor_fill_rate = limit r_instructor_fill_rate 10000;
