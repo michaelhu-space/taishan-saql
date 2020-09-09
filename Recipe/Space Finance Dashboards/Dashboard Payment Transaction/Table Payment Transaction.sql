@@ -7,12 +7,12 @@ r_table = foreach q generate
 		'Payment.Name' as 'Payment.Name', 
 		'Payment.Reference_Number__c' as 'Payment.Reference_Number__c', 
 		(case 'RecordT.Name'
-		      when "Refund Personal Order" then (-1*'Refund_From_Membership_Paid_Amount__c')
+		      when "Refund Personal Order" then (-1*'Total_Refund_Amount__c')
 		      else 'Paid_Amount__c'
 		end) as 'Paid_Amount__c', 
 		
 		(case 'RecordT.Name'
-		      when "Refund Personal Order" then (-1*'Payment.Pay_Amount__c')
+		      when "Refund Personal Order" then (-1*'Payment.Refund_Amount__c')
 		      else 'Payment.Pay_Amount__c'
 		end) as 'Payment.Pay_Amount__c', 
 

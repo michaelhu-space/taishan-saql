@@ -2,7 +2,9 @@ q = load "Recipe_Conversion_Rate";
 
 
 -- 3 months ago from this month
-q_expired_3_months = filter q by ( 'Average_Price__c' != 0 && 'Plan__c' != "Trial" )
+q_expired_3_months = filter q by 
+	( 'Average_Price__c' != 0 && 'Plan__c' != "Trial" )
+	&& 'J_Instr.Is_Active__c' == "true"
 	&& date('End_Date__c_Year', 'End_Date__c_Month', 'End_Date__c_Day') in [ .. "2 month ago"];
 
 q_expired_3_months =  group q_expired_3_months by ('Studio_.Name');	
@@ -12,7 +14,9 @@ q_expired_3_months = foreach q_expired_3_months generate
 
 
 -- return converted this month
-q_return_converted_this_month = filter q by 'Last_Purchase_Membership__c' is not null
+q_return_converted_this_month = filter q by 
+	'Last_Purchase_Membership__c' is not null
+	&& 'J_Instr.Is_Active__c' == "true"
 	&&  'Type_Of_Sale__c' in ["Return"]
 	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
 

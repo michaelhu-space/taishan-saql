@@ -2,7 +2,9 @@ q = load "Recipe_Conversion_Rate";
 
 
 -- burned 2 months from this month
-q_burned_this_month = filter q by ( 'Average_Price__c' != 0 && 'Plan__c' != "Trial" )
+q_burned_this_month = filter q by 
+	( 'Average_Price__c' != 0 && 'Plan__c' != "Trial" )
+	&& 'J_Instr.Is_Active__c' == "true"
 	&&(		date('End_Date__c_Year', 'End_Date__c_Month', 'End_Date__c_Day') in ["1 month ago" .. "current month"]
 		|| ('Main_Total_Class__c' > 5 && 'Main_Total_Available__c'<=5 && 'Status__c' == "Active" )
 	);
@@ -14,7 +16,9 @@ q_burned_this_month = foreach q_burned_this_month generate
 
 
 -- renew converted this month
-q_renew_converted_this_month = filter q by 'Last_Purchase_Membership__c' is not null
+q_renew_converted_this_month = filter q by 
+	'Last_Purchase_Membership__c' is not null
+	&& 'J_Instr.Is_Active__c' == "true"
 	&&  'Type_Of_Sale__c' in ["BurnedRenewCurrent", "BurnedRenewLast"]
 	&& 	date('Order_Create_Date__c_Year', 'Order_Create_Date__c_Month', 'Order_Create_Date__c_Day') in ["current month" .. "current month"];
 
