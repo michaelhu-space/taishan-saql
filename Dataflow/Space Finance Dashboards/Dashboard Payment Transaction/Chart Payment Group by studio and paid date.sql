@@ -1,4 +1,4 @@
-q = load "Recipe_Order_for_Purchased";
+q = load "DataSource_Order_Payment";
    
 -- paid payments
 q_paid = filter q by 
@@ -14,18 +14,25 @@ q_paid = foreach q_paid generate
 		'RecordT.Name',
 		'Payment.Name',
 
-		'PaidDateAddTimezone_Year',
-		'PaidDateAddTimezone_Month',
+		'PaymentDateAddTimezone_Year',
+		'PaymentDateAddTimezone_Month',
 
-		'PaidDateAddTimezone_Year' + "~~~" + 'PaidDateAddTimezone_Month' as 'Paid Date SH TZ Year-Month'
+		'PaymentDateAddTimezone_Year' + "-" + 'PaymentDateAddTimezone_Month' as 'Paid Date SH TZ Year-Month'
 		;
+
+q_paid = group q_paid by ('Studio_.Name', 'Paid Date SH TZ Year-Month', 'Payment.Name');
+q_paid = foreach q_paid generate 
+		'Studio_.Name', 
+		'Paid Date SH TZ Year-Month',
+		average('Payment Amount') as 'Payment Amount'
+		;
+
 
 
 -- refund payments
 q_refund = filter q by 
 	'RecordT.Name' == "Refund Personal Order"
 	;
--- q_refund = group q_refund by ('Studio_.Name', 'PaidDateAddTimezone_Year', 'PaidDateAddTimezone_Month', 'Payment.Name');
 q_refund = foreach q_refund generate 
 		'Studio_.Name',
 		-1*'Total_Refund_Amount__c'  as 'Order Amount', 
@@ -35,11 +42,21 @@ q_refund = foreach q_refund generate
 		'RecordT.Name',
 		'Payment.Name',
 
-		'PaidDateAddTimezone_Year',
-		'PaidDateAddTimezone_Month', 
+		'PaymentDateAddTimezone_Year',
+		'PaymentDateAddTimezone_Month', 
 
-		'PaidDateAddTimezone_Year' + "~~~" + 'PaidDateAddTimezone_Month' as 'Paid Date SH TZ Year-Month'
+		'PaymentDateAddTimezone_Year' + "-" + 'PaymentDateAddTimezone_Month' as 'Paid Date SH TZ Year-Month'
 		;
+
+q_refund = group q_refund by ('Studio_.Name', 'Paid Date SH TZ Year-Month', 'Payment.Name');
+q_refund = foreach q_refund generate 
+		'Studio_.Name', 
+		'Paid Date SH TZ Year-Month',
+		average('Refund Amount') as 'Refund Amount'
+		;
+		
+
+
 
 r_chart = cogroup 	q_paid 		by ('Studio_.Name', 'Paid Date SH TZ Year-Month') full, 
             		q_refund 	by ('Studio_.Name', 'Paid Date SH TZ Year-Month') 
@@ -56,8 +73,6 @@ r_chart = foreach r_chart generate
 		q_paid.'Paid Date SH TZ Year-Month',
 		q_refund.'Paid Date SH TZ Year-Month'
 	) as 'Paid Date SH TZ Year-Month',
-	
-
 	
 	sum(q_paid.'Payment Amount') as 'Payment Amount',
 	sum(q_refund.'Refund Amount') as 'Refund Amount';

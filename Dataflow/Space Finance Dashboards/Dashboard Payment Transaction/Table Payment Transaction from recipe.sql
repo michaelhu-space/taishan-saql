@@ -1,4 +1,4 @@
-q = load "Recipe_Order_for_Purchased";
+q = load "DataSource_Order_Payment";
 
 r_table = foreach q generate 
 		'RecordT.Name' as 'RecordT.Name',
@@ -23,9 +23,9 @@ r_table = foreach q generate
 		'Payment.Bank_Information__c' as 'Payment.Bank_Information__c', 
 		
 		date_to_string(toDate('Payment.Payment_Date__c_sec_epoch'), "yyyy-MM-dd HH:mm:ss") as 'Payment Datetime GMT', 
-		date_to_string(toDate('PaidDateAddTimezone_sec_epoch'), "yyyy-MM-dd HH:mm:ss") as 'Payment Datetime SH TS', 
-		'PaidDateAddTimezone_Year' as 'Payment Datetime SH Year', 
-		'PaidDateAddTimezone_Month' as 'Payment Datetime SH Month', 
+		date_to_string(toDate('PaymentDateAddTimezone_sec_epoch'), "yyyy-MM-dd HH:mm:ss") as 'Payment Datetime SH TS', 
+		'PaymentDateAddTimezone_Year' as 'Payment Datetime SH Year', 
+		'PaymentDateAddTimezone_Month' as 'Payment Datetime SH Month', 
 		'Payment.Payment_Method__c' as 'Payment.Payment_Method__c',
 		'Payment.Status__c' as 'Payment.Status__c', 
 		

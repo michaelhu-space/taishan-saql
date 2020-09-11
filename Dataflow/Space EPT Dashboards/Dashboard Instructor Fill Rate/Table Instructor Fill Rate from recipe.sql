@@ -1,4 +1,4 @@
-q = load "Dataset_Schedule_Fill_Rate";
+q = load "DataSource_Schedule_Fill_Rate";
 
 -- publish schedules
 q_schedule_fill_rate = filter q by 
@@ -8,8 +8,8 @@ q_schedule_fill_rate = filter q by
 
 
 r_schedule_fill_rate = foreach q_schedule_fill_rate generate 
-				'Class_Start_Time__c_Year' + "-" + 'Class_Start_Time__c_Month' + "-" + 'Class_Start_Time__c_Day' as 'Schedule Start Y-M-D',
-				'Class_Start_Time__c_Hour' + ":" + 'Class_Start_Time__c_Minute' as 'Schedule Start m:i',
+				'ClassStartDateAddTimezone_Year' + "-" + 'ClassStartDateAddTimezone_Month' + "-" + 'ClassStartDateAddTimezone_Day' as 'Start Y-M-D SH TZ',
+				'ClassStartDateAddTimezone_Hour' + ":" + 'ClassStartDateAddTimezone_Minute' as 'Start m:i SH TZ',
 				'Studio_Name__c', 
 				-- 'Id',
 				'Classro.Name',
@@ -41,7 +41,7 @@ r_schedule_fill_rate = foreach q_schedule_fill_rate generate
 				number_to_string(Attendance_Rate__c/100, "%") as 'Attendance Rate'
 				;
 		
-r_schedule_fill_rate = order r_schedule_fill_rate by ( 'Studio_Name__c' asc, 'Schedule Start Y-M-D' desc);
+r_schedule_fill_rate = order r_schedule_fill_rate by ( 'Studio_Name__c' asc, 'Start Y-M-D SH TZ' desc);
 r_schedule_fill_rate = limit r_schedule_fill_rate 10000;
 
 

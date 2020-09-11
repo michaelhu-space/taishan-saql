@@ -1,4 +1,4 @@
-q = load "Dataset_Class_Attendance";
+q = load "DataSource_Class_Attendance";
 
 q = foreach q generate 
 	'Account.Channel__pc' as 'Account.Channel__pc',
@@ -20,12 +20,12 @@ q = foreach q generate
 	'Modalit.Name' as 'Modalit.Name',
 	'Program.Name' as 'Program.Name',
 	'RecordT.Name' as 'RecordT.Name',
-	'Checkin_Time__c' as 'Checkin_Time__c',
+	date_to_string(toDate('Checkin_Time__c_sec_epoch'), "yyyy-MM-dd HH:mm:ss") as 'Checkin_Time__c', 
 	'Request_Type__c' as 'Request_Type__c',
 	'Operation_Status__c' as 'Operation_Status__c',
 	'Reservation_Status__c' as 'Reservation_Status__c',
 	'Schedul.Capacity__c' as 'Schedul.Capacity__c',
-	'Schedul.Class_Start_Time__c' as 'Schedul.Class_Start_Time__c',
+	date_to_string(toDate('ClassStartDateAddTimezone_sec_epoch'), "yyyy-MM-dd HH:mm:ss") as 'Class Start Datetime SH TS', 
 	'Schedul.Consumed_Classes__c' as 'Schedul.Consumed_Classes__c',
 	'Schedul.Studio_Name__c' as 'Schedul.Studio_Name__c',
 	'Schedule__c' as 'Schedule__c';

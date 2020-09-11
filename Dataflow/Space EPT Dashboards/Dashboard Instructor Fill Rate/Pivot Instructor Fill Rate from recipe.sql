@@ -1,4 +1,4 @@
-q = load "Dataset_Schedule_Fill_Rate";
+q = load "DataSource_Schedule_Fill_Rate";
 
 -- q = filter q by 
 -- date('Class_Start_Time__c_Year', 'Class_Start_Time__c_Month', 'Class_Start_Time__c_Day') in [dateRange([2020,6,01], [2020,6,30])]
