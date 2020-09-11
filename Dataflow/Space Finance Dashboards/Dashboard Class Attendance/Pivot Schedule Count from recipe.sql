@@ -31,7 +31,7 @@ r_subTotalOfStudio = foreach q_subTotalOfStudio generate
     'Schedule Start Time YM SH-TZ',
     sum('Schedule Count') as 'Schedule Count';
 
--- query schedule count goup by studio, year-month
+-- query schedule count per day goup by studio, year-month
 r_classPerDayOfStudio = foreach r_subTotalOfStudio generate 
     'Studio Name', 
     'Studio Name'+" 每日排课比例" as 'Modality Name', 
