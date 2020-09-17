@@ -1,4 +1,4 @@
-q = load "Recipe_Order_Payment";
+q = load "DataSource_Order_Payment";
 
 r_table = foreach q generate 
 		'Order_lookup_RecordType.Name' as 'Recordy Type Name',
