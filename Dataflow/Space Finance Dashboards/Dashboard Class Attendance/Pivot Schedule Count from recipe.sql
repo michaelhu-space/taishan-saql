@@ -1,54 +1,126 @@
-q = load "DataSource_Class_Attendance";
+q_all = load "DataSource_Class_Attendance";
 
-q = filter q by 'Schedul.Status__c' == "Published";
 
--- query attendance count goup by studio, modality, classroom, year-month
-q_count = group q by(  
+q_paid = filter q_all by 
+    'Members.Average_Price__c' > 0 && !('Account.Identity__c' in ["Employee", "Employee Family"])
+    ;
+
+
+q_all_duration = filter q_all by
+        date('ClassStartDateAddTimezone_Year', 'ClassStartDateAddTimezone_Month', 'ClassStartDateAddTimezone_Day') in ["1 day ago" .. "1 day ago"]
+    -- && {{cell(StaticStart_1.selection, 0, \"value\").asDateRange(\"date('ClassStartDateAddTimezone_Year', 'ClassStartDateAddTimezone_Month', 'ClassStartDateAddTimezone_Day')\")}}
+;
+
+q_paid_duration = filter q_all_duration by
+        'Members.Average_Price__c' > 0 && !('Account.Identity__c' in ["Employee", "Employee Family"])
+;
+
+
+
+q_paid_MTD = filter q_paid by 
+    
+    date('ClassStartDateAddTimezone_Year', 'ClassStartDateAddTimezone_Month', 'ClassStartDateAddTimezone_Day') in ["current month" .. "current month"]
+    ;
+
+q_paid_Last_year = filter q_paid by 
+    
+    date('ClassStartDateAddTimezone_Year', 'ClassStartDateAddTimezone_Month', 'ClassStartDateAddTimezone_Day') in ["1 year ago" .. "1 year ago"]
+    ;
+
+
+-- query all attendance count goup by studio
+q_all_duration = group q_all_duration by(  'Schedul.Studio_Name__c','Id');
+q_all_duration = foreach q_all_duration generate 
+                'Schedul.Studio_Name__c', 
+                'Id',
+                1 as 'Id_UNIQUE';
+q_all_duration = group q_all_duration by(  'Schedul.Studio_Name__c');                
+r_all_duration = foreach q_all_duration generate 
+                'Schedul.Studio_Name__c', 
+                " # TOTAL ATTENDANCE" as 'Modalit.Name',
+                sum('Id_UNIQUE') as 'TOTAL';
+
+
+-- query paid attendance count goup by studio, modality
+q_paid_duration = group q_paid_duration by(  'Schedul.Studio_Name__c','Modalit.Name','Id');
+q_paid_duration = foreach q_paid_duration generate 
+                'Schedul.Studio_Name__c', 
+                'Modalit.Name',
+                'Id',
+                1 as 'Id_UNIQUE';
+
+q_paid_duration_by_studio = group q_paid_duration by(  'Schedul.Studio_Name__c');
+r_paid_duration_by_studio = foreach q_paid_duration_by_studio generate 
+                'Schedul.Studio_Name__c', 
+                " PAID ATTENDANCE" as 'Modalit.Name',
+                sum('Id_UNIQUE') as 'TOTAL';
+
+q_paid_duration_by_modality = group q_paid_duration by(  'Schedul.Studio_Name__c','Modalit.Name');
+r_paid_duration_by_modality = foreach q_paid_duration_by_modality generate 
+                'Schedul.Studio_Name__c', 
+                'Modalit.Name',
+                sum('Id_UNIQUE') as 'TOTAL';
+
+
+
+-- query MTD attendance count goup by studio
+q_paid_MTD = group q_paid_MTD by(  'Schedul.Studio_Name__c','Id');
+q_paid_MTD = foreach q_paid_MTD generate 
+                'Schedul.Studio_Name__c', 
+                'Id',
+                1 as 'Id_UNIQUE';
+q_paid_MTD = group q_paid_MTD by(  'Schedul.Studio_Name__c');                
+r_paid_MTD = foreach q_paid_MTD generate 
+                'Schedul.Studio_Name__c', 
+                "~ # MTD PAID ATTENDANCE" as 'Modalit.Name',
+                sum('Id_UNIQUE') as 'TOTAL';
+
+-- query last year attendance count goup by studio
+q_paid_Last_year = group q_paid_Last_year by(  'Schedul.Studio_Name__c','Id');
+q_paid_Last_year = foreach q_paid_Last_year generate 
+                'Schedul.Studio_Name__c', 
+                'Id',
+                1 as 'Id_UNIQUE';
+q_paid_Last_year = group q_paid_Last_year by(  'Schedul.Studio_Name__c');                
+r_paid_Last_year = foreach q_paid_Last_year generate 
                 'Schedul.Studio_Name__c',
-                'Modalit.Name', 
-                'Classro.Name', 
-                'ClassStartDateAddTimezone_Year', 'ClassStartDateAddTimezone_Month'
-                );
-
-
-r_count = foreach q_count generate 
-                'Schedul.Studio_Name__c' as 'Studio Name', 
-                'Modalit.Name' as 'Modality Name',
-                'Classro.Name' as 'Classroom Name', 
-                'ClassStartDateAddTimezone_Year' + "-" +'ClassStartDateAddTimezone_Month' as 'Schedule Start Time YM SH-TZ',
-                
-                unique('Schedul.Id') as 'Schedule Count';
+                "~ LAST YEAR PAID ATTENDANCE" as 'Modalit.Name',
+                sum('Id_UNIQUE') as 'TOTAL';
 
 
 
 
--- query subtotal of attendance count goup by studio, year-month
-q_subTotalOfStudio = group r_count by ('Studio Name', 
-    'Schedule Start Time YM SH-TZ');
-r_subTotalOfStudio = foreach q_subTotalOfStudio generate 
-    'Studio Name', 
-    'Studio Name'+" 合计" as 'Modality Name', 
-    'Schedule Start Time YM SH-TZ',
-    sum('Schedule Count') as 'Schedule Count';
+result = cogroup    r_all_duration               by ('Schedul.Studio_Name__c','Modalit.Name') full, 
+                    r_paid_duration_by_studio    by ('Schedul.Studio_Name__c','Modalit.Name') full, 
+                    r_paid_duration_by_modality  by ('Schedul.Studio_Name__c','Modalit.Name') full, 
+                    r_paid_MTD          by ('Schedul.Studio_Name__c','Modalit.Name') full, 
+                    r_paid_Last_year    by ('Schedul.Studio_Name__c','Modalit.Name')
+                    ;
 
--- query schedule count per day goup by studio, year-month
-r_classPerDayOfStudio = foreach r_subTotalOfStudio generate 
-    'Studio Name', 
-    'Studio Name'+" 每日排课比例" as 'Modality Name', 
-    'Schedule Start Time YM SH-TZ',
-    number_to_string(sum('Schedule Count')/31/100, "#.00%") as 'Schedule Count';
+result = foreach result generate 
+    coalesce(
+            r_all_duration.'Schedul.Studio_Name__c', 
+            r_paid_duration_by_studio.'Schedul.Studio_Name__c',
+            r_paid_duration_by_modality.'Schedul.Studio_Name__c',
+            r_paid_MTD.'Schedul.Studio_Name__c',
+            r_paid_Last_year.'Schedul.Studio_Name__c'
+            ) as 'Schedul.Studio_Name__c', 
 
+    coalesce(
+            r_all_duration.'Modalit.Name', 
+            r_paid_duration_by_studio.'Modalit.Name',
+            r_paid_duration_by_modality.'Modalit.Name',
+            r_paid_MTD.'Modalit.Name',
+            r_paid_Last_year.'Modalit.Name'
+            ) as 'Modalit.Name',
+    coalesce(
+            average(r_all_duration.'TOTAL'), 
+            average(r_paid_duration_by_studio.'TOTAL'),
+            average(r_paid_duration_by_modality.'TOTAL'),
+            average(r_paid_MTD.'TOTAL'),
+            average(r_paid_Last_year.'TOTAL')
+            ) as 'ATTENDANCE'
+    ;
 
-
-r_count = order r_count by ('Studio Name' asc, 'Modality Name' asc, 'Classroom Name' asc, 'Schedule Start Time YM SH-TZ' asc);
-
-
--- union data
-r_count = union r_count
-                ,r_subTotalOfStudio
-                ,r_classPerDayOfStudio
-                ;
-
--- render data in limit
-r_count = limit r_count 20000;
-
+result = order result by ('Schedul.Studio_Name__c' asc);
+result = limit result 20000;
